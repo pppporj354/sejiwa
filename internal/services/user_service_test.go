@@ -28,8 +28,9 @@ func TestPreferencesDefaultCreation(t *testing.T) {
     repo := repository.NewReportRepository(db)
     srepo := repository.NewSubscriptionRepository(db)
     svrepo := repository.NewSavedThreadRepository(db)
+    catrepo := repository.NewCategoryRepository(db)
 
-    svc := NewUserService(urepo, prepo, trepo, rrepo, repo, srepo, svrepo)
+    svc := NewUserService(urepo, prepo, trepo, rrepo, repo, srepo, svrepo, catrepo)
     uid := uuid.New()
     user := &models.User{BaseModel: models.BaseModel{ID: uid}, Username: "alice", Password: "x", Role: models.RoleUser, Status: models.StatusActive}
     require.NoError(t, urepo.Create(user))
@@ -49,7 +50,8 @@ func TestStatsAggregation(t *testing.T) {
     repo := repository.NewReportRepository(db)
     srepo := repository.NewSubscriptionRepository(db)
     svrepo := repository.NewSavedThreadRepository(db)
-    svc := NewUserService(urepo, prepo, trepo, rrepo, repo, srepo, svrepo)
+    catrepo := repository.NewCategoryRepository(db)
+    svc := NewUserService(urepo, prepo, trepo, rrepo, repo, srepo, svrepo, catrepo)
 
     uid := uuid.New()
     user := &models.User{BaseModel: models.BaseModel{ID: uid}, Username: "bob", Password: "x", Role: models.RoleUser, Status: models.StatusActive}

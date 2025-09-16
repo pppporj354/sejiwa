@@ -23,6 +23,11 @@ type MockUserService struct {
 	mock.Mock
 }
 
+// JoinCategory implements services.UserService.
+func (m *MockUserService) JoinCategory(userID uuid.UUID, categoryID uuid.UUID, password *string) error {
+	panic("unimplemented")
+}
+
 func (m *MockUserService) GetUserProfile(userID uuid.UUID) (*dto.UserProfile, error) {
 	args := m.Called(userID)
 	if args.Get(0) == nil {
@@ -206,42 +211,45 @@ func TestUserHandler_SubscribeCategory(t *testing.T) {
 	}
 }
 
+
+
 func TestUserHandler_UnsubscribeCategory(t *testing.T) {
 	handler, mockService := setupUsersHandler()
 	gin.SetMode(gin.TestMode)
 
 	userUUID := uuid.New()
 	categoryUUID := uuid.New()
+	invalidCategoryUUID := uuid.New()
 
 	tests := []struct {
 		name           string
-		body           map[string]interface{}
+		body           interface{}
 		userID         uuid.UUID
+		categoryID     uuid.UUID
 		mockSetup      func()
 		expectedStatus int
-		checkResponse  func(t *testing.T, body string)
+		expectedBody   string
 	}{
 		{
 			name:   "successful unsubscription",
-			body:   map[string]interface{}{"category_id": categoryUUID.String()},
+			body:   dto.UnsubscribeRequest{CategoryID: categoryUUID.String()},
 			userID: userUUID,
+			categoryID: categoryUUID,
 			mockSetup: func() {
 				mockService.On("UnsubscribeCategory", userUUID, categoryUUID).Return(nil)
 			},
 			expectedStatus: http.StatusOK,
-			checkResponse: func(t *testing.T, body string) {
-				assert.Contains(t, body, `"subscribed":false`)
-			},
+			expectedBody:   `{"success":true,"message":"Successfully unsubscribed from category"}`,
 		},
 		{
 			name:   "category not found",
-			body:   map[string]interface{}{"category_id": categoryUUID.String()},
+			body:   dto.UnsubscribeRequest{CategoryID: invalidCategoryUUID.String()},
 			userID: userUUID,
+			categoryID: invalidCategoryUUID,
 			mockSetup: func() {
-				mockService.On("UnsubscribeCategory", userUUID, categoryUUID).Return(services.ErrCategoryNotFound)
+				mockService.On("UnsubscribeCategory", userUUID, invalidCategoryUUID).Return(services.ErrCategoryNotFound)
 			},
-			expectedStatus: http.StatusInternalServerError,
-			checkResponse:  func(t *testing.T, body string) {},
+			expectedStatus: http.StatusNotFound,
 		},
 	}
 
@@ -269,70 +277,6 @@ func TestUserHandler_UnsubscribeCategory(t *testing.T) {
 
 			// Assertions
 			assert.Equal(t, tt.expectedStatus, w.Code)
-			tt.checkResponse(t, w.Body.String())
-
-			mockService.AssertExpectations(t)
-		})
-	}
-}
-
-func TestUserHandler_UnsubscribeCategory(t *testing.T) {
-	handler, mockService := setupUsersHandler()
-	gin.SetMode(gin.TestMode)
-
-	tests := []struct {
-		name           string
-		body           interface{}
-		userID         string
-		mockSetup      func()
-		expectedStatus int
-		expectedBody   string
-	}{
-		{
-			name:   "successful unsubscription",
-			body:   dto.UnsubscribeRequest{CategoryID: "category-123"},
-			userID: "user-123",
-			mockSetup: func() {
-				mockService.On("UnsubscribeCategory", "user-123", "category-123").Return(nil)
-			},
-			expectedStatus: http.StatusOK,
-			expectedBody:   `{"success":true,"message":"Successfully unsubscribed from category"}`,
-		},
-		{
-			name:   "category not found",
-			body:   dto.UnsubscribeRequest{CategoryID: "invalid-category"},
-			userID: "user-123",
-			mockSetup: func() {
-				mockService.On("UnsubscribeCategory", "user-123", "invalid-category").Return(services.ErrCategoryNotFound)
-			},
-			expectedStatus: http.StatusNotFound,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Reset mock
-			mockService.Mock = mock.Mock{}
-			tt.mockSetup()
-
-			// Create request
-			bodyBytes, _ := json.Marshal(tt.body)
-			req := httptest.NewRequest(http.MethodDelete, "/api/v1/users/me/subscriptions", bytes.NewReader(bodyBytes))
-			req.Header.Set("Content-Type", "application/json")
-
-			// Create response recorder
-			w := httptest.NewRecorder()
-
-			// Create Gin context
-			c, _ := gin.CreateTestContext(w)
-			c.Request = req
-			c.Set("userID", tt.userID)
-
-			// Call handler
-			handler.UnsubscribeCategory(c)
-
-			// Assertions
-			assert.Equal(t, tt.expectedStatus, w.Code)
 			if tt.expectedBody != "" {
 				assert.JSONEq(t, tt.expectedBody, w.Body.String())
 			}
@@ -346,30 +290,37 @@ func TestUserHandler_SaveThread(t *testing.T) {
 	handler, mockService := setupUsersHandler()
 	gin.SetMode(gin.TestMode)
 
+	userUUID := uuid.New()
+	threadUUID := uuid.New()
+	invalidThreadUUID := uuid.New()
+
 	tests := []struct {
 		name           string
 		body           interface{}
-		userID         string
+		userID         uuid.UUID
+		threadID       uuid.UUID
 		mockSetup      func()
 		expectedStatus int
 		expectedBody   string
 	}{
 		{
 			name:   "successful thread save",
-			body:   dto.SaveThreadRequest{ThreadID: "thread-123"},
-			userID: "user-123",
+			body:   dto.SaveThreadRequest{ThreadID: threadUUID.String()},
+			userID: userUUID,
+			threadID: threadUUID,
 			mockSetup: func() {
-				mockService.On("SaveThread", "user-123", "thread-123").Return(nil)
+				mockService.On("SaveThread", userUUID, threadUUID).Return(nil)
 			},
 			expectedStatus: http.StatusOK,
 			expectedBody:   `{"success":true,"message":"Thread saved successfully"}`,
 		},
 		{
 			name:   "thread not found",
-			body:   dto.SaveThreadRequest{ThreadID: "invalid-thread"},
-			userID: "user-123",
+			body:   dto.SaveThreadRequest{ThreadID: invalidThreadUUID.String()},
+			userID: userUUID,
+			threadID: invalidThreadUUID,
 			mockSetup: func() {
-				mockService.On("SaveThread", "user-123", "invalid-thread").Return(services.ErrThreadNotFound)
+				mockService.On("SaveThread", userUUID, invalidThreadUUID).Return(services.ErrThreadNotFound)
 			},
 			expectedStatus: http.StatusNotFound,
 		},
@@ -391,13 +342,6 @@ func TestUserHandler_SaveThread(t *testing.T) {
 
 			// Create Gin context
 			c, _ := gin.CreateTestContext(w)
-			c.Request = req
-			c.Set("userID", tt.userID)
-
-			// Call handler
-			handler.SaveThread(c)
-
-			// Assertions
 			assert.Equal(t, tt.expectedStatus, w.Code)
 			if tt.expectedBody != "" {
 				assert.JSONEq(t, tt.expectedBody, w.Body.String())
@@ -409,33 +353,47 @@ func TestUserHandler_SaveThread(t *testing.T) {
 }
 
 func TestUserHandler_UnsaveThread(t *testing.T) {
+			handler.SaveThread(c)
+
+			// Assertions
+			assert.Equal(t, tt.expectedStatus, w.Code)
+			if tt.expectedBody != "" {
+				assert.JSONEq(t, tt.expectedBody, w.Body.String())
+func TestUserHandler_UnsaveThread(t *testing.T) {
 	handler, mockService := setupUsersHandler()
 	gin.SetMode(gin.TestMode)
+
+	userUUID := uuid.New()
+	threadUUID := uuid.New()
+	invalidThreadUUID := uuid.New()
 
 	tests := []struct {
 		name           string
 		body           interface{}
-		userID         string
+		userID         uuid.UUID
+		threadID       uuid.UUID
 		mockSetup      func()
 		expectedStatus int
 		expectedBody   string
 	}{
 		{
 			name:   "successful thread unsave",
-			body:   dto.UnsaveThreadRequest{ThreadID: "thread-123"},
-			userID: "user-123",
+			body:   dto.UnsaveThreadRequest{ThreadID: threadUUID.String()},
+			userID: userUUID,
+			threadID: threadUUID,
 			mockSetup: func() {
-				mockService.On("UnsaveThread", "user-123", "thread-123").Return(nil)
+				mockService.On("UnsaveThread", userUUID, threadUUID).Return(nil)
 			},
 			expectedStatus: http.StatusOK,
 			expectedBody:   `{"success":true,"message":"Thread unsaved successfully"}`,
 		},
 		{
 			name:   "thread not found",
-			body:   dto.UnsaveThreadRequest{ThreadID: "invalid-thread"},
-			userID: "user-123",
+			body:   dto.UnsaveThreadRequest{ThreadID: invalidThreadUUID.String()},
+			userID: userUUID,
+			threadID: invalidThreadUUID,
 			mockSetup: func() {
-				mockService.On("UnsaveThread", "user-123", "invalid-thread").Return(services.ErrThreadNotFound)
+				mockService.On("UnsaveThread", userUUID, invalidThreadUUID).Return(services.ErrThreadNotFound)
 			},
 			expectedStatus: http.StatusNotFound,
 		},
@@ -450,15 +408,22 @@ func TestUserHandler_UnsaveThread(t *testing.T) {
 			// Create request
 			bodyBytes, _ := json.Marshal(tt.body)
 			req := httptest.NewRequest(http.MethodDelete, "/api/v1/users/me/saved-threads", bytes.NewReader(bodyBytes))
-			req.Header.Set("Content-Type", "application/json")
+			assert.Equal(t, tt.expectedStatus, w.Code)
+			if tt.expectedBody != "" {
+				assert.JSONEq(t, tt.expectedBody, w.Body.String())
+			}
 
-			// Create response recorder
-			w := httptest.NewRecorder()
+			mockService.AssertExpectations(t)
+		})
+	}
+}
+
+func TestUserHandler_ListSavedThreads(t *testing.T) {
 
 			// Create Gin context
 			c, _ := gin.CreateTestContext(w)
 			c.Request = req
-			c.Set("userID", tt.userID)
+			c.Set(middleware.ContextUserIDKey, tt.userID)
 
 			// Call handler
 			handler.UnsaveThread(c)
@@ -497,37 +462,39 @@ func TestUserHandler_ListSavedThreads(t *testing.T) {
 		},
 	}
 
+	userUUID := uuid.New()
+
 	tests := []struct {
 		name           string
 		query          string
-		userID         string
+		userID         uuid.UUID
 		mockSetup      func()
 		expectedStatus int
 	}{
 		{
 			name:   "successful list with default params",
 			query:  "",
-			userID: "user-123",
+			userID: userUUID,
 			mockSetup: func() {
-				mockService.On("ListSavedThreads", "user-123", 1, 10).Return(mockResponse, nil)
+				mockService.On("ListSavedThreads", userUUID, 1, 10).Return(mockResponse, nil)
 			},
 			expectedStatus: http.StatusOK,
 		},
 		{
 			name:   "successful list with custom params",
 			query:  "?page=2&limit=5",
-			userID: "user-123",
+			userID: userUUID,
 			mockSetup: func() {
-				mockService.On("ListSavedThreads", "user-123", 2, 5).Return(mockResponse, nil)
+				mockService.On("ListSavedThreads", userUUID, 2, 5).Return(mockResponse, nil)
 			},
 			expectedStatus: http.StatusOK,
 		},
 		{
 			name:   "service error",
 			query:  "",
-			userID: "user-123",
+			userID: userUUID,
 			mockSetup: func() {
-				mockService.On("ListSavedThreads", "user-123", 1, 10).Return(nil, testutils.ErrDatabase)
+				mockService.On("ListSavedThreads", userUUID, 1, 10).Return(nil, testutils.ErrDatabase)
 			},
 			expectedStatus: http.StatusInternalServerError,
 		},
@@ -535,10 +502,12 @@ func TestUserHandler_ListSavedThreads(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Reset mock
-			mockService.Mock = mock.Mock{}
-			tt.mockSetup()
+			mockService.AssertExpectations(t)
+		})
+	}
+}
 
+func TestUserHandler_UpdateNotificationPreferences(t *testing.T) {
 			// Create request
 			req := httptest.NewRequest(http.MethodGet, "/api/v1/users/me/saved-threads"+tt.query, nil)
 
@@ -548,7 +517,7 @@ func TestUserHandler_ListSavedThreads(t *testing.T) {
 			// Create Gin context
 			c, _ := gin.CreateTestContext(w)
 			c.Request = req
-			c.Set("userID", tt.userID)
+			c.Set(middleware.ContextUserIDKey, tt.userID)
 
 			// Call handler
 			handler.ListSavedThreads(c)
@@ -559,16 +528,16 @@ func TestUserHandler_ListSavedThreads(t *testing.T) {
 			mockService.AssertExpectations(t)
 		})
 	}
-}
-
 func TestUserHandler_UpdateNotificationPreferences(t *testing.T) {
 	handler, mockService := setupUsersHandler()
 	gin.SetMode(gin.TestMode)
 
+	userUUID := uuid.New()
+
 	tests := []struct {
 		name           string
 		body           interface{}
-		userID         string
+		userID         uuid.UUID
 		mockSetup      func()
 		expectedStatus int
 		expectedBody   string
@@ -579,13 +548,13 @@ func TestUserHandler_UpdateNotificationPreferences(t *testing.T) {
 				EmailNotifications: true,
 				PushNotifications:  false,
 			},
-			userID: "user-123",
+			userID: userUUID,
 			mockSetup: func() {
-				req := &dto.UpdateNotificationPreferencesRequest{
+				req := dto.UpdateNotificationPreferencesRequest{
 					EmailNotifications: true,
 					PushNotifications:  false,
 				}
-				mockService.On("UpdateNotificationPreferences", "user-123", req).Return(nil)
+				mockService.On("UpdateNotificationPreferences", userUUID, req).Return(&models.UserPreferences{}, nil)
 			},
 			expectedStatus: http.StatusOK,
 			expectedBody:   `{"success":true,"message":"Notification preferences updated successfully"}`,
@@ -593,7 +562,7 @@ func TestUserHandler_UpdateNotificationPreferences(t *testing.T) {
 		{
 			name:   "invalid request body",
 			body:   "invalid json",
-			userID: "user-123",
+			userID: userUUID,
 			mockSetup: func() {
 				// No mock setup needed for validation failure
 			},
@@ -610,6 +579,29 @@ func TestUserHandler_UpdateNotificationPreferences(t *testing.T) {
 			// Create request
 			bodyBytes, _ := json.Marshal(tt.body)
 			req := httptest.NewRequest(http.MethodPut, "/api/v1/users/me/preferences/notifications", bytes.NewReader(bodyBytes))
+			req.Header.Set("Content-Type", "application/json")
+
+			// Create response recorder
+			w := httptest.NewRecorder()
+
+			// Create Gin context
+			c, _ := gin.CreateTestContext(w)
+			c.Request = req
+			c.Set(middleware.ContextUserIDKey, tt.userID)
+
+			// Call handler
+			handler.UpdateNotificationPreferences(c)
+
+			// Assertions
+			assert.Equal(t, tt.expectedStatus, w.Code)
+			if tt.expectedBody != "" {
+				assert.JSONEq(t, tt.expectedBody, w.Body.String())
+			}
+
+			mockService.AssertExpectations(t)
+		})
+	}
+}
 			req.Header.Set("Content-Type", "application/json")
 
 			// Create response recorder

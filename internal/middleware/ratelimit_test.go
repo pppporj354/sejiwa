@@ -18,7 +18,7 @@ func TestNewRateLimiter_AllowsWithinLimit(t *testing.T) {
     r := gin.New()
     r.GET("/", rl, func(c *gin.Context) { c.Status(http.StatusOK) })
 
-    for i := 0; i < 5; i++ {
+    for i := range 5 {
         w := httptest.NewRecorder()
         req := httptest.NewRequest(http.MethodGet, "/", nil)
         r.ServeHTTP(w, req)
