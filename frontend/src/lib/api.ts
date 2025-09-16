@@ -3,6 +3,7 @@ import storage from "@/lib/storage"
 
 const api = axios.create({
   withCredentials: false,
+  baseURL: "/api", // Add base URL for API calls
 })
 
 // Token management (in-memory; synced by store)
@@ -24,8 +25,25 @@ export default api
 
 // Global 401 handling: clear session and redirect to login
 api.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    // Debug logging for development
+    if (process.env.NODE_ENV === "development") {
+      console.log(
+        `API Response [${res.config.method?.toUpperCase()} ${res.config.url}]:`,
+        res.data
+      )
+    }
+    return res
+  },
   (err) => {
+    // Debug logging for errors
+    if (process.env.NODE_ENV === "development") {
+      console.error(
+        `API Error [${err.config?.method?.toUpperCase()} ${err.config?.url}]:`,
+        err.response?.data || err.message
+      )
+    }
+
     if (err?.response?.status === 401) {
       // For guests (no token), don't force redirect; let UI handle 401 gracefully
       const hasToken = Boolean(accessToken)

@@ -6,8 +6,19 @@ import type {
 } from "@/types/api"
 
 export async function listCategories() {
-  const res = await api.get<Category[]>(`/categories`)
-  return res.data
+  try {
+    const res = await api.get<Category[]>(`/categories`)
+    // Ensure we always return an array
+    if (Array.isArray(res.data)) {
+      return res.data
+    } else {
+      console.warn("listCategories: Expected array but got:", res.data)
+      return []
+    }
+  } catch (error) {
+    console.error("listCategories error:", error)
+    return []
+  }
 }
 
 export async function listAdminCategories() {

@@ -12,16 +12,44 @@ export async function getReports(params: {
   status?: string
   priority?: string
 }) {
-  const { page = 1, pageSize = 20, status, priority } = params
-  const res = await api.get<ReportListResponse>(`/moderation/reports`, {
-    params: {
-      page,
-      pageSize,
-      ...(status ? { status } : {}),
-      ...(priority ? { priority } : {}),
-    },
-  })
-  return res.data
+  try {
+    const { page = 1, pageSize = 20, status, priority } = params
+    const res = await api.get<ReportListResponse>(`/moderation/reports`, {
+      params: {
+        page,
+        pageSize,
+        ...(status ? { status } : {}),
+        ...(priority ? { priority } : {}),
+      },
+    })
+
+    // Ensure we have a valid ReportListResponse structure
+    if (
+      res.data &&
+      typeof res.data === "object" &&
+      Array.isArray(res.data.reports)
+    ) {
+      return res.data
+    } else {
+      console.warn("getReports: Expected ReportListResponse but got:", res.data)
+      return {
+        reports: [],
+        total: 0,
+        page: 1,
+        page_size: pageSize,
+        total_pages: 0,
+      }
+    }
+  } catch (error) {
+    console.error("getReports error:", error)
+    return {
+      reports: [],
+      total: 0,
+      page: 1,
+      page_size: params.pageSize || 20,
+      total_pages: 0,
+    }
+  }
 }
 
 export async function processReport(

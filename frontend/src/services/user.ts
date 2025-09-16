@@ -79,8 +79,22 @@ export async function getUserCategories(): Promise<CategorySubscription[]> {
 
 // Saved threads APIs
 export async function listSavedThreads() {
-  const { data } = await api.get("/users/me/saved-threads")
-  return data
+  try {
+    const { data } = await api.get("/users/me/saved-threads")
+    // Ensure we have a valid response with items array
+    if (data && typeof data === "object" && Array.isArray(data.items)) {
+      return data
+    } else {
+      console.warn(
+        "listSavedThreads: Expected object with items array but got:",
+        data
+      )
+      return { items: [], total: 0 }
+    }
+  } catch (error) {
+    console.error("listSavedThreads error:", error)
+    return { items: [], total: 0 }
+  }
 }
 
 export async function saveThread(thread_id: string) {

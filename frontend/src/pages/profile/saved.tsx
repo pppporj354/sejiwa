@@ -53,8 +53,11 @@ export default function SavedThreadsPage() {
     unsaveMutation.mutate(threadId)
   }
 
-  const savedThreads = savedData?.items || []
-  const total = savedData?.total || 0
+  const savedThreads = Array.isArray(savedData?.items) ? savedData.items : []
+  const total =
+    savedData?.total && typeof savedData.total === "number"
+      ? savedData.total
+      : 0
 
   if (error) {
     return (
