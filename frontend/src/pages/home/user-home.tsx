@@ -26,7 +26,7 @@ export default function UserHomePage() {
 
   const { data: recentThreads } = useQuery({
     queryKey: ["threads", "recent"],
-    queryFn: () => listThreads({ page: 1, pageSize: 5 }),
+    queryFn: () => listThreads({ page: 1, page_size: 5 }),
   })
 
   const { data: userActivity } = useQuery({
@@ -115,7 +115,7 @@ export default function UserHomePage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {recentThreads?.items?.slice(0, 5).map((thread) => (
+                  {recentThreads?.threads?.slice(0, 5).map((thread) => (
                     <div
                       key={thread.id}
                       className="flex items-start gap-3 p-4 rounded-lg border hover:bg-slate-50 transition-colors"

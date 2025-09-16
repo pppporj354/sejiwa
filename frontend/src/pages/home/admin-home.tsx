@@ -30,7 +30,7 @@ export default function AdminHomePage() {
 
   const { data: recentThreads } = useQuery({
     queryKey: ["threads", "recent"],
-    queryFn: () => listThreads({ page: 1, pageSize: 5 }),
+    queryFn: () => listThreads({ page: 1, page_size: 5 }),
   })
 
   const { data: users } = useQuery({
@@ -45,7 +45,7 @@ export default function AdminHomePage() {
 
   const { data: moderationStats } = useQuery({
     queryKey: ["moderation-stats"],
-    queryFn: getModerationStats,
+    queryFn: () => getModerationStats(),
   })
 
   return (
@@ -151,7 +151,7 @@ export default function AdminHomePage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {recentThreads?.items?.slice(0, 5).map((thread) => (
+                  {recentThreads?.threads?.slice(0, 5).map((thread) => (
                     <div
                       key={thread.id}
                       className="flex items-start gap-3 p-4 rounded-lg border hover:bg-slate-50 transition-colors"

@@ -172,6 +172,7 @@ export type SubscribeRequest = {
 
 // Thread DTOs
 export type Thread = {
+  author: AnonymousAuthor | UserProfile
   id: string
   title: string
   content: string
