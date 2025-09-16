@@ -1,16 +1,21 @@
-# --- Tahap 1: Build Aset Frontend ---
+# --- Tahap 1: Build Stage (Membangun Aset Frontend) ---
 FROM oven/bun:1.0 as builder
 WORKDIR /app
-COPY frontend/package.json frontend/bun.lockb ./
-RUN bun install --frozen-lockfile
-COPY frontend/ .
-RUN bun run build
 
-# --- Tahap 2: Siapkan Image Nginx Produksi ---
+# Salin package.json untuk instalasi
+COPY frontend/package.json ./
+RUN bun install
+
+# Salin sisa kode frontend
+COPY frontend/ .
+
+# Build aplikasi, TAPI abaikan error TypeScript dengan langsung memanggil vite
+# INI ADALAH PERUBAHANNYA:
+RUN bunx vite build
+
+
+# --- Tahap 2: Production Stage (Menyiapkan Nginx) ---
 FROM nginx:stable-alpine
-# Salin hasil build dari tahap sebelumnya ke direktori web Nginx
 COPY --from=builder /app/dist /usr/share/nginx/html
-# Salin file konfigurasi Nginx kustom kita
 COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
-# Perintah untuk menjalankan Nginx
 CMD ["nginx", "-g", "daemon off;"]

@@ -1,7 +1,10 @@
+# FILE: sejiwa/docker-compose.yml
+# Versi final yang sudah disesuaikan untuk berjalan di belakang reverse proxy
+
 version: "3.8"
 
 services:
-  # Service Backend (Go API)
+  # Service untuk Backend Go API
   api:
     build:
       context: .
@@ -13,9 +16,10 @@ services:
     depends_on:
       - db
     networks:
+      # Terhubung ke jaringan internal khusus untuk aplikasi sejiwa
       - sejiwa-net
 
-  # Service Database (PostgreSQL)
+  # Service untuk Database PostgreSQL
   db:
     build:
       context: ./docker/postgres
@@ -29,32 +33,40 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
+      # Juga terhubung ke jaringan internal khusus untuk aplikasi sejiwa
       - sejiwa-net
 
-  # Service Nginx (Frontend + Reverse Proxy)
+  # Service untuk Frontend (Nginx yang menyajikan file React)
   nginx:
     build:
       context: .
-      dockerfile: nginx.Dockerfile # Menggunakan Dockerfile yang baru kita buat
+      dockerfile: nginx.Dockerfile
     container_name: sejiwa-nginx
     restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
+    # Perhatikan: Bagian 'ports' sudah DIHAPUS dari sini.
+    # Kontainer ini tidak lagi terhubung langsung ke dunia luar.
     volumes:
-      # Volume untuk sertifikat SSL dari Certbot
       - /etc/letsencrypt:/etc/letsencrypt:ro
-      # Volume untuk proses verifikasi domain oleh Certbot
       - ./certbot-data:/var/www/certbot
     depends_on:
       - api
     networks:
+      # Terhubung ke dua jaringan:
+      # 1. Jaringan internal 'sejiwa-net' untuk bicara dengan 'api'
       - sejiwa-net
+      # 2. Jaringan eksternal 'nginx-proxy' agar bisa ditemukan oleh reverse proxy utama
+      - nginx-proxy
 
+# Deklarasi jaringan yang digunakan di atas
 networks:
+  # Jaringan internal untuk komunikasi antar service di dalam aplikasi sejiwa
   sejiwa-net:
     driver: bridge
+  # Jaringan bersama yang juga akan digunakan oleh reverse proxy utama
+  nginx-proxy:
+    external: true # Menandakan bahwa jaringan ini dibuat di luar file ini
 
+# Deklarasi volume untuk menyimpan data database secara permanen
 volumes:
   postgres_data:
     driver: local
