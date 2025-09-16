@@ -23,7 +23,7 @@ export default function ModeratorHomePage() {
 
   const { data: recentThreads } = useQuery({
     queryKey: ["threads", "recent"],
-    queryFn: () => listThreads({ page: 1, pageSize: 5 }),
+    queryFn: () => listThreads({ page: 1, page_size: 5 }),
   })
 
   const { data: userActivity } = useQuery({
@@ -38,7 +38,7 @@ export default function ModeratorHomePage() {
 
   const { data: moderationStats } = useQuery({
     queryKey: ["moderation-stats"],
-    queryFn: getModerationStats,
+    queryFn: () => getModerationStats(),
   })
 
   return (
@@ -131,17 +131,17 @@ export default function ModeratorHomePage() {
                 <CardTitle className="flex items-center gap-2">
                   <AlertTriangle className="w-5 h-5 text-red-600" />
                   Recent Reports
-                  {reports?.items?.length > 0 && (
-                    <Badge variant="destructive" className="ml-2">
-                      {reports.items.length} pending
+                  {reports?.reports && reports.reports.length > 0 && (
+                    <Badge variant="danger" className="ml-2">
+                      {reports.reports.length} pending
                     </Badge>
                   )}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {reports?.items?.length > 0 ? (
+                {reports?.reports && reports.reports.length > 0 ? (
                   <div className="space-y-4">
-                    {reports.items.slice(0, 3).map((report) => (
+                    {reports.reports.slice(0, 3).map((report) => (
                       <div
                         key={report.id}
                         className="flex items-start gap-3 p-4 rounded-lg border border-red-100 bg-red-50/50"
@@ -155,7 +155,7 @@ export default function ModeratorHomePage() {
                             <Badge
                               variant={
                                 report.priority === "high"
-                                  ? "destructive"
+                                  ? "danger"
                                   : report.priority === "medium"
                                   ? "default"
                                   : "secondary"
@@ -202,7 +202,7 @@ export default function ModeratorHomePage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {recentThreads?.items?.slice(0, 5).map((thread) => (
+                  {recentThreads?.threads?.slice(0, 5).map((thread) => (
                     <div
                       key={thread.id}
                       className="flex items-start gap-3 p-4 rounded-lg border hover:bg-slate-50 transition-colors"

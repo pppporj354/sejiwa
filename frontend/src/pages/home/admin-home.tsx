@@ -201,17 +201,17 @@ export default function AdminHomePage() {
                 <CardTitle className="flex items-center gap-2">
                   <AlertTriangle className="w-5 h-5 text-red-600" />
                   Moderation Queue
-                  {reports?.items?.length > 0 && (
-                    <Badge variant="destructive" className="ml-2">
-                      {reports.items.length} pending
+                  {reports?.reports && reports.reports.length > 0 && (
+                    <Badge variant="danger" className="ml-2">
+                      {reports.reports.length} pending
                     </Badge>
                   )}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {reports?.items?.length > 0 ? (
+                {reports?.reports && reports.reports.length > 0 ? (
                   <div className="space-y-4">
-                    {reports.items.slice(0, 3).map((report) => (
+                    {reports.reports.slice(0, 3).map((report) => (
                       <div
                         key={report.id}
                         className="flex items-start gap-3 p-4 rounded-lg border border-red-100 bg-red-50/50"
@@ -225,7 +225,7 @@ export default function AdminHomePage() {
                             <Badge
                               variant={
                                 report.priority === "high"
-                                  ? "destructive"
+                                  ? "danger"
                                   : report.priority === "medium"
                                   ? "default"
                                   : "secondary"
