@@ -63,7 +63,7 @@ api.interceptors.response.use(
         storage.setRefreshToken(null)
         storage.setUser(null)
         setAccessToken(null)
-        
+
         // Also clear the auth store state to trigger re-renders
         // We'll import this dynamically to avoid circular dependencies
         import("@/store/auth").then(({ useAuthStore }) => {
