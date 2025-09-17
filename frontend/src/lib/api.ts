@@ -63,6 +63,12 @@ api.interceptors.response.use(
         storage.setRefreshToken(null)
         storage.setUser(null)
         setAccessToken(null)
+        
+        // Also clear the auth store state to trigger re-renders
+        // We'll import this dynamically to avoid circular dependencies
+        import("@/store/auth").then(({ useAuthStore }) => {
+          useAuthStore.getState().clearSession()
+        })
       }
       // If no token, just reject so pages like PublicHome can show fallbacks
     }

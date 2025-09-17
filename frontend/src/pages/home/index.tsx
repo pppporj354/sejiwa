@@ -7,6 +7,9 @@ import PublicHomePage from "@/pages/home/public-home"
 export default function HomePage() {
   const { user, isAuthenticated } = useAuthStore()
 
+  // Debug logging (remove in production)
+  console.log("HomePage Debug:", { isAuthenticated, user, role: user?.role })
+
   // If not authenticated, show public home page
   if (!isAuthenticated || !user) {
     return <PublicHomePage />

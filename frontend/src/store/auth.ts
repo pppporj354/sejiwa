@@ -22,9 +22,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   accessToken: storage.getAccessToken(),
   refreshToken: storage.getRefreshToken(),
   lastAuthChangeAt: null,
-  get isAuthenticated() {
-    return !!get().accessToken
-  },
+  isAuthenticated: !!storage.getAccessToken(),
   setSession: (auth) => {
     storage.setAccessToken(auth.access_token)
     storage.setRefreshToken(auth.refresh_token)
@@ -35,6 +33,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       accessToken: auth.access_token,
       refreshToken: auth.refresh_token,
       user: auth.user,
+      isAuthenticated: true,
       lastAuthChangeAt: Date.now(),
     }))
   },
@@ -48,6 +47,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       accessToken: null,
       refreshToken: null,
       user: null,
+      isAuthenticated: false,
       lastAuthChangeAt: Date.now(),
     }))
   },
