@@ -22,5 +22,5 @@ RUN ls -la
 # --- Tahap 2: Production Stage (Menyiapkan Nginx) ---
 FROM nginx:stable-alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
-COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx/simple.conf /etc/nginx/conf.d/default.conf
 CMD ["nginx", "-g", "daemon off;"]
