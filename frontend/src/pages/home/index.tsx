@@ -7,7 +7,7 @@ import { useEffect } from "react"
 import storage from "@/lib/storage"
 
 export default function HomePage() {
-  const { user, isAuthenticated, accessToken, setSession } = useAuthStore()
+  const { user, isAuthenticated, setSession } = useAuthStore()
 
   // Hydration effect to ensure auth state is properly loaded from localStorage
   useEffect(() => {
@@ -36,18 +36,18 @@ export default function HomePage() {
   }, [isAuthenticated, user, setSession])
 
   // Debug logging to see what's happening
-  console.log("HomePage Debug:", {
-    isAuthenticated,
-    user,
-    role: user?.role,
-    accessToken: accessToken ? `${accessToken.substring(0, 20)}...` : null,
-    hasToken: !!accessToken,
-    hasUser: !!user,
-  })
+  // console.log("HomePage Debug:", {
+  //   isAuthenticated,
+  //   user,
+  //   role: user?.role,
+  //   accessToken: accessToken ? `${accessToken.substring(0, 20)}...` : null,
+  //   hasToken: !!accessToken,
+  //   hasUser: !!user,
+  // })
 
   // If not authenticated, show public home page
   if (!isAuthenticated || !user) {
-    console.log("Showing PublicHomePage - not authenticated or no user")
+    // console.log("Showing PublicHomePage - not authenticated or no user")
     return <PublicHomePage />
   }
 
