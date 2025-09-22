@@ -27,22 +27,22 @@ export default api
 api.interceptors.response.use(
   (res) => {
     // Debug logging for development
-    if (process.env.NODE_ENV === "development") {
-      console.log(
-        `API Response [${res.config.method?.toUpperCase()} ${res.config.url}]:`,
-        res.data
-      )
-    }
+    // if (process.env.NODE_ENV === "development") {
+    //   console.log(
+    //     `API Response [${res.config.method?.toUpperCase()} ${res.config.url}]:`,
+    //     res.data
+    //   )
+    // }
     return res
   },
   (err) => {
     // Debug logging for errors
-    if (process.env.NODE_ENV === "development") {
-      console.error(
-        `API Error [${err.config?.method?.toUpperCase()} ${err.config?.url}]:`,
-        err.response?.data || err.message
-      )
-    }
+    // if (process.env.NODE_ENV === "development") {
+    //   console.error(
+    //     `API Error [${err.config?.method?.toUpperCase()} ${err.config?.url}]:`,
+    //     err.response?.data || err.message
+    //   )
+    // }
 
     if (err?.response?.status === 401) {
       // For guests (no token), don't force redirect; let UI handle 401 gracefully
