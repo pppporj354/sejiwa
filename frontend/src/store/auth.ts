@@ -23,11 +23,11 @@ export const useAuthStore = create<AuthState>((set, get) => {
   const initialToken = storage.getAccessToken()
   const initialAuth = !!initialToken
 
-  console.log("Auth Store Initialize:", {
-    initialUser,
-    initialToken: initialToken ? `${initialToken.substring(0, 20)}...` : null,
-    initialAuth,
-  })
+  // console.log("Auth Store Initialize:", {
+  //   initialUser,
+  //   initialToken: initialToken ? `${initialToken.substring(0, 20)}...` : null,
+  //   initialAuth,
+  // })
 
   return {
     user: initialUser,
@@ -36,10 +36,10 @@ export const useAuthStore = create<AuthState>((set, get) => {
     lastAuthChangeAt: null,
     isAuthenticated: initialAuth,
     setSession: (auth) => {
-      console.log("Auth Store setSession:", {
-        user: auth.user,
-        role: auth.user.role,
-      })
+      // console.log("Auth Store setSession:", {
+      //   user: auth.user,
+      //   role: auth.user.role,
+      // })
       storage.setAccessToken(auth.access_token)
       storage.setRefreshToken(auth.refresh_token)
       storage.setUser(auth.user)
@@ -54,7 +54,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
       }))
     },
     clearSession: () => {
-      console.log("Auth Store clearSession")
+      // console.log("Auth Store clearSession")
       storage.setAccessToken(null)
       storage.setRefreshToken(null)
       storage.setUser(null)
