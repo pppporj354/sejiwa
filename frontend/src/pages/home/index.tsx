@@ -14,12 +14,12 @@ export default function HomePage() {
     const storedToken = storage.getAccessToken()
     const storedUser = storage.getUser()
 
-    console.log("HomePage useEffect - checking stored auth:", {
-      storedToken: storedToken ? `${storedToken.substring(0, 20)}...` : null,
-      storedUser,
-      currentAuthenticated: isAuthenticated,
-      currentUser: user,
-    })
+    // console.log("HomePage useEffect - checking stored auth:", {
+    //   storedToken: storedToken ? `${storedToken.substring(0, 20)}...` : null,
+    //   storedUser,
+    //   currentAuthenticated: isAuthenticated,
+    //   currentUser: user,
+    // })
 
     // If we have stored auth but the store is not authenticated, restore the session
     if (storedToken && storedUser && !isAuthenticated) {
